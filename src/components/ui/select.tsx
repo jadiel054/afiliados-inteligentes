@@ -113,7 +113,7 @@ const SelectValue = React.forwardRef<HTMLSpanElement, SelectValueProps>(
 SelectValue.displayName = 'SelectValue';
 
 // SelectContent Component
-export interface SelectContentProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SelectContentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> {
   onSelect?: (value: string) => void;
   onClose?: () => void;
 }
@@ -145,7 +145,7 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
 SelectContent.displayName = 'SelectContent';
 
 // SelectItem Component
-export interface SelectItemProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SelectItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> {
   value: string;
   onSelect?: (value: string) => void;
 }

@@ -48,22 +48,20 @@ export type {
 // CONFIGURAÇÃO DE SAZONALIDADE
 // ============================================
 
-// Calendário de sazonalidade por categoria (seção 8.3)
-// Valores: 'alta', 'neutro', 'baixa'
 export const SAZONALIDADE: Record<string, Record<string, 'alta' | 'neutro' | 'baixa'>> = {
   beleza: {
-    '01': 'alta',    // Janeiro - Verão, resoluções de ano novo
-    '02': 'alta',    // Fevereiro - Verão, Carnaval
+    '01': 'alta',
+    '02': 'alta',
     '03': 'neutro',
     '04': 'neutro',
-    '05': 'alta',    // Maio - Dia das Mães
+    '05': 'alta',
     '06': 'neutro',
     '07': 'neutro',
     '08': 'neutro',
     '09': 'neutro',
     '10': 'neutro',
-    '11': 'alta',    // Novembro - Black Friday, Natal
-    '12': 'alta',    // Dezembro - Natal, Ano Novo
+    '11': 'alta',
+    '12': 'alta',
   },
   'cuidados-pessoais': {
     '01': 'alta',
@@ -94,15 +92,15 @@ export const SAZONALIDADE: Record<string, Record<string, 'alta' | 'neutro' | 'ba
     '10': 'neutro',
   },
   pele: {
-    '01': 'alta',    // Verão - protetor solar
+    '01': 'alta',
     '02': 'alta',
-    '03': 'alta',    // Outono - transição
+    '03': 'alta',
     '04': 'neutro',
-    '05': 'alta',    // Maio - Dia das Mães
+    '05': 'alta',
     '06': 'neutro',
     '07': 'neutro',
     '08': 'neutro',
-    '09': 'alta',    // Primavera - renovação
+    '09': 'alta',
     '10': 'neutro',
     '11': 'alta',
     '12': 'alta',
@@ -126,33 +124,25 @@ export const SAZONALIDADE: Record<string, Record<string, 'alta' | 'neutro' | 'ba
     '02': 'neutro',
     '03': 'neutro',
     '04': 'neutro',
-    '05': 'alta',    // Maio - Dia das Mães
+    '05': 'alta',
     '06': 'neutro',
     '07': 'neutro',
     '08': 'neutro',
     '09': 'neutro',
     '10': 'neutro',
-    '11': 'alta',    // Novembro - Black Friday
-    '12': 'alta',    // Dezembro - Natal (presentes)
+    '11': 'alta',
+    '12': 'alta',
   },
 };
 
-// ============================================
-// PESOS PARA PONTUAÇÃO DO AGENTE (seção 8.3)
-// ============================================
-
 export const PESOS_PONTUACAO = {
-  margem: 0.30,      // Margem de comissão
-  giro: 0.25,        // Giro/velocidade de venda
-  avaliacao: 0.15,   // Avaliação do produto
-  tendencia: 0.15,  // Tendência de crescimento
-  competitividade: 0.10, // Competitividade
-  sazonalidade: 0.05,  // Sazonalidade
+  margem: 0.30,
+  giro: 0.25,
+  avaliacao: 0.15,
+  tendencia: 0.15,
+  competitividade: 0.10,
+  sazonalidade: 0.05,
 } as const;
-
-// ============================================
-// LIMITES E CONFIGURAÇÕES PADRÃO
-// ============================================
 
 export const CONFIG_PADRAO_AGENTE = {
   modo: 'semi_autonomo' as ModoAgente,
@@ -166,10 +156,6 @@ export const CONFIG_PADRAO_AGENTE = {
   horario_fim: 22,
   categorias: Array.from(CATEGORIAS_NICHO),
 } as const;
-
-// ============================================
-// LIMITES DE VALIDAÇÃO
-// ============================================
 
 export const LIMITES = {
   NOME_MIN: 2,
@@ -190,18 +176,10 @@ export const LIMITES = {
   PONTUACAO_MAX: 100,
 } as const;
 
-// ============================================
-// CONFIGURAÇÃO DE PAGINAÇÃO
-// ============================================
-
 export const PAGINACAO = {
   ITENS_POR_PAGINA: 20,
   MAX_PAGINAS: 10,
 } as const;
-
-// ============================================
-// MENSAGENS PADRÃO
-// ============================================
 
 export const MENSAGENS = {
   ERRO_GENERICO: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
@@ -225,38 +203,24 @@ export const MENSAGENS = {
   CARREGANDO: 'Carregando...',
 } as const;
 
-// ============================================
-// CONFIGURAÇÃO DO LINK CURTO
-// ============================================
-
 export const LINK_CURTO = {
   TAMANHO_CODIGO: 8,
   BASE_URL: import.meta.env.VITE_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'),
   MAX_TENTATIVAS: 5,
 } as const;
 
-// ============================================
-// CONFIGURAÇÃO DE RETRY (seção 3.5)
-// ============================================
-
 export const RETRY_CONFIG = {
   MAX_TENTATIVAS: 3,
-  BACKOFF_BASE: 1000, // 1 segundo
-  BACKOFF_MAX: 4000, // 4 segundos
+  BACKOFF_BASE: 1000,
+  BACKOFF_MAX: 4000,
   STATUS_RETRY: [429, 500, 502, 503, 504],
 } as const;
 
-// ============================================
-// FUNÇÕES AUXILIARES
-// ============================================
-
-// Obter o valor de sazonalidade para uma categoria e mês
 export function getSazonalidade(categoria: string, mes: string): 'alta' | 'neutro' | 'baixa' {
   const mesFormatado = mes.padStart(2, '0');
   return SAZONALIDADE[categoria]?.[mesFormatado] || 'neutro';
 }
 
-// Converter data para o fuso horário de São Paulo
 export function toSaoPauloTime(date: Date | string): Date {
   if (typeof date === 'string') {
     date = new Date(date);
@@ -264,12 +228,10 @@ export function toSaoPauloTime(date: Date | string): Date {
   return new Date(date.toLocaleString('pt-BR', { timeZone: FUSO }));
 }
 
-// Obter data atual em São Paulo
 export function getDataAtualSP(): Date {
   return toSaoPauloTime(new Date());
 }
 
-// Formatar data para exibição
 export function formatarData(data: Date | string, formato: 'curto' | 'longo' = 'curto'): string {
   const date = typeof data === 'string' ? new Date(data) : data;
   const spDate = toSaoPauloTime(date);
@@ -286,7 +248,6 @@ export function formatarData(data: Date | string, formato: 'curto' | 'longo' = '
   return spDate.toLocaleDateString('pt-BR');
 }
 
-// Formatar valor monetário
 export function formatarMoeda(valor: number): string {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -294,7 +255,6 @@ export function formatarMoeda(valor: number): string {
   }).format(valor);
 }
 
-// Formatar porcentagem
 export function formatarPorcentagem(valor: number): string {
   return new Intl.NumberFormat('pt-BR', {
     style: 'percent',
@@ -303,7 +263,6 @@ export function formatarPorcentagem(valor: number): string {
   }).format(valor / 100);
 }
 
-// Gerar código aleatório para link curto
 export function gerarCodigoCurto(): string {
   const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let codigo = '';
@@ -314,18 +273,15 @@ export function gerarCodigoCurto(): string {
   return codigo;
 }
 
-// Mascarar chave API (mostrar últimos 4 caracteres)
 export function mascararChave(chave: string): string {
   if (chave.length <= 4) return '****';
   return '*'.repeat(chave.length - 4) + chave.slice(-4);
 }
 
-// Obter cor da plataforma
 export function getCorPlataforma(slug: PlataformaSlug): string {
   return PLATAFORMAS_CORES[slug];
 }
 
-// Obter nome da plataforma
 export function getNomePlataforma(slug: PlataformaSlug): string {
   const nomes: Record<PlataformaSlug, string> = {
     shopee: 'Shopee',
@@ -336,7 +292,6 @@ export function getNomePlataforma(slug: PlataformaSlug): string {
   return nomes[slug];
 }
 
-// Obter classificação do produto com base nas métricas (seção 7.2)
 export function getClassificacaoAutomatica(
   cliques: number,
   vendas: number,
@@ -354,5 +309,27 @@ export function getClassificacaoAutomatica(
   if (cliques >= 50 && vendas === 0) {
     return 'fraco';
   }
-  return null; // Dados insuficientes
+  return null;
+}
+
+/** Copia texto para a área de transferência */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    // Fallback
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return ok;
+  } catch {
+    return false;
+  }
 }

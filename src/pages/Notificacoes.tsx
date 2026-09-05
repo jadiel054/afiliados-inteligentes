@@ -2,7 +2,7 @@
 // PÁGINA DE NOTIFICAÇÕES
 // ============================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import supabase from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -10,10 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { MENSAGENS } from '@/lib/constantes';
-import { Bell, CheckCircle, XCircle, AlertCircle, DollarSign, TrendingUp, Link2, Robot } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, DollarSign, TrendingUp, Link2, Bot } from 'lucide-react';
 import type { Notificacao } from '@/types';
 
-// Componente para ícone da notificação
 function getNotificacaoIcon(tipo: string) {
   switch (tipo) {
     case 'venda':
@@ -23,7 +22,7 @@ function getNotificacaoIcon(tipo: string) {
     case 'link_problema':
       return <Link2 className="w-5 h-5 text-yellow-500" />;
     case 'agente':
-      return <Robot className="w-5 h-5 text-blue-500" />;
+      return <Bot className="w-5 h-5 text-blue-500" />;
     case 'sistema':
       return <AlertCircle className="w-5 h-5 text-gray-500" />;
     case 'resumo':
@@ -33,7 +32,6 @@ function getNotificacaoIcon(tipo: string) {
   }
 }
 
-// Componente para cor do badge
 function getNotificacaoColor(tipo: string) {
   switch (tipo) {
     case 'venda':
@@ -60,7 +58,6 @@ export default function Notificacoes() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0);
 
-  // Buscar notificações
   const fetchData = useCallback(async () => {
     if (!usuario) return;
     
@@ -68,7 +65,6 @@ export default function Notificacoes() {
       setLoading(true);
       setError(null);
       
-      // Buscar notificações
       const { data: notificacoesData, error: notificacoesError } = await supabase
         .from('notificacoes')
         .select('*')
@@ -91,7 +87,6 @@ export default function Notificacoes() {
     }
   }, [usuario]);
 
-  // Marcar notificação como lida
   const handleMarcarComoLida = async (notificacaoId: string) => {
     if (!usuario) return;
     
@@ -104,7 +99,6 @@ export default function Notificacoes() {
       
       if (error) throw error;
       
-      // Atualizar estado local
       setNotificacoes(prev => 
         prev.map(n => 
           n.id === notificacaoId ? { ...n, lida: true } : n
@@ -118,7 +112,6 @@ export default function Notificacoes() {
     }
   };
 
-  // Marcar todas como lidas
   const handleMarcarTodasComoLidas = async () => {
     if (!usuario) return;
     
@@ -131,7 +124,6 @@ export default function Notificacoes() {
       
       if (error) throw error;
       
-      // Atualizar estado local
       setNotificacoes(prev => 
         prev.map(n => ({ ...n, lida: true }))
       );
@@ -145,7 +137,6 @@ export default function Notificacoes() {
     }
   };
 
-  // Buscar dados ao montar o componente
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -173,7 +164,6 @@ export default function Notificacoes() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Notificações</h1>
@@ -191,7 +181,6 @@ export default function Notificacoes() {
         )}
       </div>
 
-      {/* Lista de notificações */}
       <Card>
         <CardHeader>
           <CardTitle>Todas as Notificações</CardTitle>
@@ -258,7 +247,6 @@ export default function Notificacoes() {
         </CardContent>
       </Card>
 
-      {/* Estatísticas */}
       <Card>
         <CardHeader>
           <CardTitle>Estatísticas de Notificações</CardTitle>

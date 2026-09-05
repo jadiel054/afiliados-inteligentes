@@ -15,6 +15,8 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
     const [selectedValue, setSelectedValue] = React.useState(value || '');
     const triggerRef = React.useRef<HTMLDivElement>(null);
 
+    React.useImperativeHandle(ref, () => triggerRef.current as HTMLDivElement);
+
     React.useEffect(() => {
       setSelectedValue(value || '');
     }, [value]);

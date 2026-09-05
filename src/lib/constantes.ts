@@ -231,7 +231,9 @@ export const MENSAGENS = {
 
 export const LINK_CURTO = {
   TAMANHO_CODIGO: 8,
-  BASE_URL: import.meta.env.VITE_PUBLIC_URL || window.location.origin,
+  // Next.js usa process.env (não import.meta.env do Vite)
+  // Preferir NEXT_PUBLIC_APP_URL ou NEXT_PUBLIC_URL; fallback para localhost no build
+  BASE_URL: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
   MAX_TENTATIVAS: 5,
 } as const;
 

@@ -2,7 +2,7 @@
 // PÁGINA DO AGENTE - PROPOSTAS E CONFIGURAÇÕES
 // ============================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import supabase from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { MENSAGENS } from '@/lib/constantes';
-import { Robot, Brain, CheckCircle, XCircle, Clock, TrendingUp, Sparkles, PlayCircle, StopCircle } from 'lucide-react';
+import { Bot, Brain, CheckCircle, XCircle, Clock, TrendingUp, Sparkles, PlayCircle } from 'lucide-react';
 
 export default function Agente() {
   const { usuario } = useAuth();
@@ -20,7 +20,6 @@ export default function Agente() {
   const [configAgente, setConfigAgente] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
 
-  // Buscar dados
   const fetchData = useCallback(async () => {
     if (!usuario) return;
     
@@ -28,7 +27,6 @@ export default function Agente() {
       setLoading(true);
       setError(null);
       
-      // Buscar propostas
       const { data: propostasData, error: propostasError } = await supabase
         .from('propostas_agente')
         .select('*, produto:produtos(*)')
@@ -37,7 +35,6 @@ export default function Agente() {
       
       if (propostasError) throw propostasError;
       
-      // Buscar configuração do agente
       const { data: configData, error: configError } = await supabase
         .from('config_agente')
         .select('*')
@@ -46,7 +43,6 @@ export default function Agente() {
       
       if (configError && configError.code !== 'PGRST116') throw configError;
       
-      // Buscar logs do agente
       const { data: logsData, error: logsError } = await supabase
         .from('log_agente')
         .select('*')
@@ -69,12 +65,10 @@ export default function Agente() {
     }
   }, [usuario]);
 
-  // Aprovar proposta
   const handleAprovarProposta = async (propostaId: string) => {
     if (!usuario) return;
     
     try {
-      // Atualizar status da proposta
       const { error } = await supabase
         .from('propostas_agente')
         .update({
@@ -94,7 +88,6 @@ export default function Agente() {
     }
   };
 
-  // Rejeitar proposta
   const handleRejeitarProposta = async (propostaId: string) => {
     if (!usuario) return;
     
@@ -118,7 +111,6 @@ export default function Agente() {
     }
   };
 
-  // Buscar dados ao montar o componente
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -146,7 +138,6 @@ export default function Agente() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Agente Inteligente</h1>
@@ -164,11 +155,10 @@ export default function Agente() {
         </div>
       </div>
 
-      {/* Status do Agente */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Robot className="w-5 h-5" />
+            <Bot className="w-5 h-5" />
             Status do Agente
           </CardTitle>
         </CardHeader>
@@ -176,7 +166,7 @@ export default function Agente() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Robot className="w-8 h-8 text-primary" />
+                <Bot className="w-8 h-8 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold">Modo de Operação</h3>
@@ -205,7 +195,6 @@ export default function Agente() {
         </CardContent>
       </Card>
 
-      {/* Propostas Recentes */}
       <Card>
         <CardHeader>
           <CardTitle>Propostas Recentes</CardTitle>
@@ -296,7 +285,6 @@ export default function Agente() {
         </CardContent>
       </Card>
 
-      {/* Atividade do Agente */}
       <Card>
         <CardHeader>
           <CardTitle>Atividade do Agente</CardTitle>

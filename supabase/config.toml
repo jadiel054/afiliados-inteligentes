@@ -1,0 +1,11 @@
+[global]
+project_id = "gkjibipgqoasweisfltp"
+
+[functions.ia-testar]
+# Configuração específica para ia-testar
+
+[functions.ia-completar]
+# Configuração específica para ia-completar
+
+[functions.redirect-link]
+# Configuração específica para redirect-link

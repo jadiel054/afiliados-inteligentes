@@ -5,6 +5,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import { AuthProvider, ProtectedRoute, PublicRoute } from '@/context/AuthContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { Toaster } from 'sonner';
 
 // Importar layout e páginas
@@ -50,8 +51,9 @@ function RedirectLink() {
 // Componente principal
 function App() {
   return (
-    <AuthProvider>
-      <React.Suspense fallback={<LoadingFallback />}>
+    <ThemeProvider>
+      <AuthProvider>
+        <React.Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Rotas públicas */}
           <Route
@@ -114,16 +116,17 @@ function App() {
         </Routes>
       </React.Suspense>
 
-      {/* Toaster para notificações */}
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        toastOptions={{
-          className: 'group toast group-[.toaster]:bg-background group-[.toaster]:shadow-lg',
-        }}
-      />
-    </AuthProvider>
+        {/* Toaster para notificações */}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            className: 'group toast group-[.toaster]:bg-background group-[.toaster]:shadow-lg',
+          }}
+        />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

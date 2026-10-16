@@ -7,75 +7,26 @@ import { useAuth } from '@/context/AuthContext';
 import supabase from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, DollarSign, MousePointer, BarChart3 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title } from 'chart.js';
-import { Pie, Bar, Line } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import { toast } from 'sonner';
-import { MENSAGENS, PERIODOS } from '@/lib/constantes';
-import { formatarMoeda, formatarPorcentagem } from '@/lib/constantes';
-import type { Periodo } from '@/types';
+import { MENSAGENS, formatarMoeda, formatarPorcentagem } from '@/lib/constantes';
+import type { Periodo, Evento } from '@/types';
+import { PeriodoSelector } from '@/components/Painel/PeriodoSelector';
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title
-);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
-export function PeriodoSelector({
-  periodo,
-  onPeriodoChange,
-  dataEspecifica,
-  onDataEspecificaChange,
-}: {
-  periodo: Periodo;
-  onPeriodoChange: (periodo: Periodo) => void;
-  dataEspecifica: string;
-  onDataEspecificaChange: (data: string) => void;
-}) {
-  const [showDataInput, setShowDataInput] = useState(false);
-
-  useEffect(() => {
-    setShowDataInput(periodo === 'especifico');
-  }, [periodo]);
-
-  return (
-    <div className="flex flex-wrap gap-2 items-center">
-      <Select value={periodo} onValueChange={(v) => onPeriodoChange(v as Periodo)}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Período" />
-        </SelectTrigger>
-        <SelectContent>
-          {PERIODOS.map((p) => (
-            <SelectItem key={p} value={p}>
-              {p}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {showDataInput && (
-        <input
-          type="date"
-          value={dataEspecifica}
-          onChange={(e) => onDataEspecificaChange(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
-        />
-      )}
-    </div>
-  );
+function toSPDate(date: Date | string): Date {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Date(d.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
 }
 
 export default function Painel() {
   const { usuario } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [eventos, setEventos] = useState<any[]>([]);
+  const [eventos, setEventos] = useState<Evento[]>([]);
   const [periodo, setPeriodo] = useState<Periodo>('hoje');
   const [dataEspecifica, setDataEspecifica] = useState('');
 
@@ -102,22 +53,20 @@ export default function Painel() {
 
   const getEventosFiltrados = useCallback(() => {
     const now = new Date();
-    const spTimezone = 'America/Sao_Paulo';
 
     return eventos.filter((e) => {
-      const eventoDate = new Date(e.ocorrido_em);
-      const eventoDateSP = new Date(eventoDate.toLocaleString('pt-BR', { timeZone: spTimezone }));
+      const eventoDateSP = toSPDate(e.ocorrido_em);
 
       switch (periodo) {
         case 'hoje': {
-          const todaySP = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const todaySP = toSPDate(now);
           todaySP.setHours(0, 0, 0, 0);
           const tomorrowSP = new Date(todaySP);
           tomorrowSP.setDate(tomorrowSP.getDate() + 1);
           return eventoDateSP >= todaySP && eventoDateSP < tomorrowSP;
         }
         case 'ontem': {
-          const yesterdaySP = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const yesterdaySP = toSPDate(now);
           yesterdaySP.setDate(yesterdaySP.getDate() - 1);
           yesterdaySP.setHours(0, 0, 0, 0);
           const endOfYesterday = new Date(yesterdaySP);
@@ -125,28 +74,48 @@ export default function Painel() {
           return eventoDateSP >= yesterdaySP && eventoDateSP < endOfYesterday;
         }
         case 'ultimos_3': {
-          const threeDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const threeDaysAgo = toSPDate(now);
           threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
           threeDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= threeDaysAgo;
         }
         case 'ultimos_5': {
-          const fiveDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const fiveDaysAgo = toSPDate(now);
           fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
           fiveDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= fiveDaysAgo;
         }
         case 'ultimos_7': {
-          const sevenDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const sevenDaysAgo = toSPDate(now);
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
           sevenDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= sevenDaysAgo;
+        }
+        case 'ultimos_15': {
+          const fifteenDaysAgo = toSPDate(now);
+          fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+          fifteenDaysAgo.setHours(0, 0, 0, 0);
+          return eventoDateSP >= fifteenDaysAgo;
+        }
+        case 'ultimo_mes': {
+          const thirtyDaysAgo = toSPDate(now);
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          thirtyDaysAgo.setHours(0, 0, 0, 0);
+          return eventoDateSP >= thirtyDaysAgo;
+        }
+        case 'especifico': {
+          if (!dataEspecifica) return true;
+          const [year, month, day] = dataEspecifica.split('-').map(Number);
+          if (!year || !month || !day) return true;
+          const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+          const endOfDay = new Date(year, month - 1, day + 1, 0, 0, 0, 0);
+          return eventoDateSP >= startOfDay && eventoDateSP < endOfDay;
         }
         default:
           return true;
       }
     });
-  }, [eventos, periodo]);
+  }, [eventos, periodo, dataEspecifica]);
 
   useEffect(() => {
     fetchData();
@@ -162,12 +131,7 @@ export default function Painel() {
 
   const chartData = {
     labels: ['Cliques', 'Vendas'],
-    datasets: [
-      {
-        data: [cliques, vendas],
-        backgroundColor: ['#3b82f6', '#22c55e'],
-      },
-    ],
+    datasets: [{ data: [cliques, vendas], backgroundColor: ['#3b82f6', '#22c55e'] }],
   };
 
   if (loading && eventos.length === 0) {
@@ -209,9 +173,7 @@ export default function Painel() {
               <MousePointer className="w-4 h-4" /> Cliques
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cliques}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold">{cliques}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -219,9 +181,7 @@ export default function Painel() {
               <TrendingUp className="w-4 h-4" /> Vendas
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{vendas}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold">{vendas}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -229,9 +189,7 @@ export default function Painel() {
               <DollarSign className="w-4 h-4" /> Comissão
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatarMoeda(comissao)}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold">{formatarMoeda(comissao)}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -239,20 +197,14 @@ export default function Painel() {
               <BarChart3 className="w-4 h-4" /> Conversão
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatarPorcentagem(conversao)}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold">{formatarPorcentagem(conversao)}</div></CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Distribuição</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Distribuição</CardTitle></CardHeader>
         <CardContent className="h-64 flex items-center justify-center">
-          <div className="w-64 h-64">
-            <Pie data={chartData} />
-          </div>
+          <div className="w-64 h-64"><Pie data={chartData} /></div>
         </CardContent>
       </Card>
     </div>

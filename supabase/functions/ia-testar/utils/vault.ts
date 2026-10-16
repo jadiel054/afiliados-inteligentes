@@ -14,32 +14,16 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Função para salvar chave no Vault
 export async function salvarNoVault(chave: string): Promise<string | null> {
   try {
-    // Gerar nome único para o segredo
-    const secretName = `ia_key_${crypto.randomUUID()}`;
-    
-    // Salvar no Vault usando a API REST do Supabase
-    // O Supabase Vault usa o endpoint /vault/secrets
-    const vaultResponse = await fetch(`${supabaseUrl}/vault/secrets`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'apikey': supabaseServiceKey,
-      },
-      body: JSON.stringify({
-        name: secretName,
-        value: chave,
-      }),
+    const { data, error } = await supabase.rpc('vault_rpc_wrapper_create_secret', {
+      p_value: chave,
     });
 
-    if (!vaultResponse.ok) {
-      console.error('Erro ao salvar no Vault:', await vaultResponse.text());
+    if (error || !data) {
+      console.error('Erro ao salvar no Vault:', error);
       return null;
     }
 
-    const vaultData = await vaultResponse.json();
-    return vaultData.id || null;
-    
+    return data as string;
   } catch (error) {
     console.error('Erro ao salvar no Vault:', error);
     return null;
@@ -49,23 +33,16 @@ export async function salvarNoVault(chave: string): Promise<string | null> {
 // Função para obter chave do Vault
 export async function obterDoVault(vaultSecretId: string): Promise<string | null> {
   try {
-    // Obter segredo do Vault
-    const vaultResponse = await fetch(`${supabaseUrl}/vault/secrets/${vaultSecretId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'apikey': supabaseServiceKey,
-      },
+    const { data, error } = await supabase.rpc('vault_rpc_wrapper_get_secret', {
+      p_id: vaultSecretId,
     });
 
-    if (!vaultResponse.ok) {
-      console.error('Erro ao obter do Vault:', await vaultResponse.text());
+    if (error || !data) {
+      console.error('Erro ao obter do Vault:', error);
       return null;
     }
 
-    const vaultData = await vaultResponse.json();
-    return vaultData.value || null;
-    
+    return data as string;
   } catch (error) {
     console.error('Erro ao obter do Vault:', error);
     return null;
@@ -75,21 +52,16 @@ export async function obterDoVault(vaultSecretId: string): Promise<string | null
 // Função para excluir segredo do Vault
 export async function excluirDoVault(vaultSecretId: string): Promise<boolean> {
   try {
-    const vaultResponse = await fetch(`${supabaseUrl}/vault/secrets/${vaultSecretId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'apikey': supabaseServiceKey,
-      },
+    const { error } = await supabase.rpc('vault_rpc_wrapper_delete_secret', {
+      p_id: vaultSecretId,
     });
 
-    if (!vaultResponse.ok) {
-      console.error('Erro ao excluir do Vault:', await vaultResponse.text());
+    if (error) {
+      console.error('Erro ao excluir do Vault:', error);
       return false;
     }
 
     return true;
-    
   } catch (error) {
     console.error('Erro ao excluir do Vault:', error);
     return false;

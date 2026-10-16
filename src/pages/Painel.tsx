@@ -17,6 +17,11 @@ import { PeriodoSelector } from '@/components/Painel/PeriodoSelector';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
+function toSPDate(date: Date | string): Date {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Date(d.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+}
+
 export default function Painel() {
   const { usuario } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -48,22 +53,20 @@ export default function Painel() {
 
   const getEventosFiltrados = useCallback(() => {
     const now = new Date();
-    const spTimezone = 'America/Sao_Paulo';
 
     return eventos.filter((e) => {
-      const eventoDate = new Date(e.ocorrido_em);
-      const eventoDateSP = new Date(eventoDate.toLocaleString('pt-BR', { timeZone: spTimezone }));
+      const eventoDateSP = toSPDate(e.ocorrido_em);
 
       switch (periodo) {
         case 'hoje': {
-          const todaySP = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const todaySP = toSPDate(now);
           todaySP.setHours(0, 0, 0, 0);
           const tomorrowSP = new Date(todaySP);
           tomorrowSP.setDate(tomorrowSP.getDate() + 1);
           return eventoDateSP >= todaySP && eventoDateSP < tomorrowSP;
         }
         case 'ontem': {
-          const yesterdaySP = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const yesterdaySP = toSPDate(now);
           yesterdaySP.setDate(yesterdaySP.getDate() - 1);
           yesterdaySP.setHours(0, 0, 0, 0);
           const endOfYesterday = new Date(yesterdaySP);
@@ -71,31 +74,31 @@ export default function Painel() {
           return eventoDateSP >= yesterdaySP && eventoDateSP < endOfYesterday;
         }
         case 'ultimos_3': {
-          const threeDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const threeDaysAgo = toSPDate(now);
           threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
           threeDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= threeDaysAgo;
         }
         case 'ultimos_5': {
-          const fiveDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const fiveDaysAgo = toSPDate(now);
           fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
           fiveDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= fiveDaysAgo;
         }
         case 'ultimos_7': {
-          const sevenDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const sevenDaysAgo = toSPDate(now);
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
           sevenDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= sevenDaysAgo;
         }
         case 'ultimos_15': {
-          const fifteenDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const fifteenDaysAgo = toSPDate(now);
           fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
           fifteenDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= fifteenDaysAgo;
         }
         case 'ultimo_mes': {
-          const thirtyDaysAgo = new Date(now.toLocaleString('pt-BR', { timeZone: spTimezone }));
+          const thirtyDaysAgo = toSPDate(now);
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
           thirtyDaysAgo.setHours(0, 0, 0, 0);
           return eventoDateSP >= thirtyDaysAgo;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -47,30 +47,39 @@ export function ProvedorModal({ isOpen, onClose, provedor, usuario, onRefetch }:
     ordem_fallback: 1,
     chave_api: '',
   });
+  const [statusDesligadoManual, setStatusDesligadoManual] = useState(false);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  if (isOpen && provedor &&
-      (formData.nome !== provedor.nome ||
-       formData.provedor !== provedor.provedor ||
-       formData.url_base !== (provedor.url_base || '') ||
-       formData.conta_id !== (provedor.conta_id || '') ||
-       formData.modelo !== provedor.modelo ||
-       formData.ativo !== provedor.ativo ||
-       formData.ordem_fallback !== provedor.ordem_fallback)) {
-    setFormData({
-      nome: provedor.nome || '',
-      provedor: provedor.provedor,
-      url_base: provedor.url_base || '',
-      conta_id: provedor.conta_id || '',
-      modelo: provedor.modelo,
-      ativo: provedor.ativo,
-      ordem_fallback: provedor.ordem_fallback,
-      chave_api: '',
-    });
-  }
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(provedor ? {
+        nome: provedor.nome || '',
+        provedor: provedor.provedor,
+        url_base: provedor.url_base || '',
+        conta_id: provedor.conta_id || '',
+        modelo: provedor.modelo,
+        ativo: provedor.ativo,
+        ordem_fallback: provedor.ordem_fallback,
+        chave_api: '',
+      } : {
+        nome: '',
+        provedor: 'groq',
+        url_base: '',
+        conta_id: '',
+        modelo: '',
+        ativo: true,
+        ordem_fallback: 1,
+        chave_api: '',
+      });
+      setStatusDesligadoManual(false);
+    }
+  }, [isOpen, provedor]);
 
   const handleChange = (field: keyof ProvedorIAFormData, value: string | number | boolean) => {
+    if (field === 'ativo') {
+      setStatusDesligadoManual(value === false);
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -101,6 +110,7 @@ export function ProvedorModal({ isOpen, onClose, provedor, usuario, onRefetch }:
             .limit(1);
 
           const nextOrdem = existing && existing.length > 0 ? existing[0].ordem_fallback + 1 : 1;
+          const finalAtivo = chave_api?.trim() && !statusDesligadoManual ? true : formData.ativo;
           const { error: insertError } = await supabase.from('provedores_ia').insert({
             usuario_id: usuario.id,
             nome: formData.nome || p,
@@ -109,7 +119,7 @@ export function ProvedorModal({ isOpen, onClose, provedor, usuario, onRefetch }:
             url_base: formData.url_base,
             conta_id: formData.conta_id,
             modelo: formData.modelo,
-            ativo: formData.ativo,
+            ativo: finalAtivo,
             ordem_fallback: nextOrdem,
           });
 
@@ -133,14 +143,15 @@ export function ProvedorModal({ isOpen, onClose, provedor, usuario, onRefetch }:
 
   const salvarProvedor = async () => {
     if (!usuario || !provedor) return;
-    const { nome, provedor: p, url_base, modelo, ativo, ordem_fallback, conta_id } = formData;
+    const { nome, provedor: p, url_base, modelo, ativo, ordem_fallback, conta_id, chave_api } = formData;
     if (!p || !modelo) return toast.error('Preencha todos os campos obrigatórios.');
 
     setSaving(true);
     try {
+      const finalAtivo = chave_api?.trim() && !statusDesligadoManual ? true : ativo;
       const { error } = await supabase
         .from('provedores_ia')
-        .update({ usuario_id: usuario.id, nome: nome || p, provedor: p, url_base, conta_id, modelo, ativo, ordem_fallback })
+        .update({ usuario_id: usuario.id, nome: nome || p, provedor: p, url_base, conta_id, modelo, ativo: finalAtivo, ordem_fallback })
         .eq('id', provedor.id)
         .eq('usuario_id', usuario.id);
       if (error) throw error;

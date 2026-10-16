@@ -3,19 +3,22 @@
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import supabase from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { MENSAGENS } from '@/lib/constantes';
-import { Bot, Sparkles, PlayCircle } from 'lucide-react';
+import { Bot, Sparkles, PlayCircle, Loader2 } from 'lucide-react';
 import type { PropostaAgente, ConfigAgente, LogAgente } from '@/types';
 import { PropostasList } from '@/components/Agente/PropostasList';
 
 export default function Agente() {
+  const navigate = useNavigate();
   const { usuario } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [propostas, setPropostas] = useState<PropostaAgente[]>([]);
   const [configAgente, setConfigAgente] = useState<ConfigAgente | null>(null);
@@ -77,6 +80,39 @@ export default function Agente() {
     }
   };
 
+  const handleRodarAgora = async () => {
+    if (!usuario) return;
+
+    try {
+      setRunning(true);
+      const { data: provedoresAtivos, error: provError } = await supabase
+        .from('provedores_ia')
+        .select('id')
+        .eq('usuario_id', usuario.id)
+        .eq('ativo', true);
+
+      if (provError) throw provError;
+
+      if (!provedoresAtivos || provedoresAtivos.length === 0) {
+        toast.warning('Ative um provedor de IA em Configurações antes de rodar o agente');
+        return;
+      }
+
+      const response = await supabase.functions.invoke('ia-completar', { body: {} });
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast.success('Agente executado com sucesso!');
+      await fetchData();
+    } catch (err) {
+      console.error('Erro ao rodar agente:', err);
+      toast.error(MENSAGENS.ERRO_GENERICO);
+    } finally {
+      setRunning(false);
+    }
+  };
+
   const handleRejeitarProposta = async (propostaId: string) => {
     if (!usuario) return;
     try {
@@ -122,8 +158,20 @@ export default function Agente() {
           <p className="text-muted-foreground">Análise e propostas de produtos automaticamente</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" leftIcon={<PlayCircle className="w-4 h-4" />}>Rodar Agora</Button>
-          <Button leftIcon={<Sparkles className="w-4 h-4" />}>Configurações</Button>
+          <Button
+            variant="outline"
+            disabled={running}
+            onClick={handleRodarAgora}
+            leftIcon={running ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
+          >
+            {running ? 'Rodando...' : 'Rodar Agora'}
+          </Button>
+          <Button
+            leftIcon={<Sparkles className="w-4 h-4" />}
+            onClick={() => navigate('/configuracoes')}
+          >
+            Configurações
+          </Button>
         </div>
       </div>
 

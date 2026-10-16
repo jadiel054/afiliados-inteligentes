@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Plus, CheckCircle, X, Edit, Trash2 } from 'lucide-react';
+import { Brain, Plus, CheckCircle, X, Edit, Trash2, Play, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MENSAGENS, mascararChave } from '@/lib/constantes';
 import supabase from '@/lib/supabase';
@@ -21,6 +21,34 @@ interface ProvedoresIATabProps {
 export function ProvedoresIATab({ provedores, usuario, onRefetch }: ProvedoresIATabProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingProvedor, setEditingProvedor] = useState<ProvedorIAConfig | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
+
+  const testarProvedor = async (p: ProvedorIAConfig) => {
+    if (!usuario) return;
+    setTestingId(p.id);
+    try {
+      const response = await supabase.functions.invoke('ia-testar', {
+        body: {
+          provedor_id: p.id,
+          provedor: p.provedor,
+          usuario_id: usuario.id,
+          modelo: p.modelo,
+          url_base: p.url_base,
+          conta_id: p.conta_id,
+        },
+      });
+
+      if (response.error) {
+        toast.error(MENSAGENS.ERRO_GENERICO);
+      }
+      await onRefetch();
+    } catch (err) {
+      console.error('Erro ao testar provedor:', err);
+      toast.error(MENSAGENS.ERRO_GENERICO);
+    } finally {
+      setTestingId(null);
+    }
+  };
 
   const excluirProvedor = async (id: string) => {
     if (!usuario) return;
@@ -99,6 +127,20 @@ export function ProvedoresIATab({ provedores, usuario, onRefetch }: ProvedoresIA
                   <Badge variant={p.ativo ? 'default' : 'secondary'}>
                     {p.ativo ? 'Ativo' : 'Inativo'}
                   </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={testingId === p.id}
+                    onClick={() => testarProvedor(p)}
+                    title="Testar Conexão"
+                  >
+                    {testingId === p.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    <span className="ml-1 text-xs">Testar</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

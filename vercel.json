@@ -3,6 +3,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/r/:codigo",
+      "destination": "https://gkjibjipgcqasweisfitp.supabase.co/functions/v1/redirect-link/r/:codigo"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

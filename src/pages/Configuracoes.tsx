@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { MENSAGENS } from '@/lib/constantes';
-import { Brain, LogOut, Trash2 } from 'lucide-react';
 import type { ConfigAgente, ProvedorIAConfig } from '@/types';
 import { AgenteConfigTab } from '@/components/Configuracoes/AgenteConfigTab';
 import { ProvedoresIATab } from '@/components/Configuracoes/ProvedoresIATab';
@@ -68,9 +67,10 @@ export default function Configuracoes() {
           .eq('usuario_id', usuario.id);
         if (error) throw error;
       } else {
+        const { id, ...payload } = data;
         const { error } = await supabase
           .from('config_agente')
-          .insert({ usuario_id: usuario.id, ...data, atualizado_em: new Date().toISOString() });
+          .insert({ ...payload, usuario_id: usuario.id, atualizado_em: new Date().toISOString() });
         if (error) throw error;
       }
       toast.success('Configurações salvas com sucesso!');

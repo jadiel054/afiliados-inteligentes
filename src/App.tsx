@@ -2,12 +2,13 @@
 // COMPONENTE PRINCIPAL DO APP
 // ============================================
 
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { AuthProvider, ProtectedRoute, PublicRoute } from '@/context/AuthContext';
 import { Toaster } from 'sonner';
 
-// Importar páginas
+// Importar layout e páginas
+const Layout = React.lazy(() => import('@/components/Layout/Layout'));
 const Login = React.lazy(() => import('@/pages/Login'));
 const Cadastro = React.lazy(() => import('@/pages/Cadastro'));
 const RecuperarSenha = React.lazy(() => import('@/pages/RecuperarSenha'));
@@ -24,6 +25,27 @@ const LoadingFallback = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
   </div>
 );
+
+// Componente para redirecionamento de link curto
+function RedirectLink() {
+  const { codigo } = useParams<{ codigo: string }>();
+
+  useEffect(() => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://gkjibjipgcqasweisfitp.supabase.co';
+    if (codigo) {
+      window.location.replace(`${supabaseUrl}/functions/v1/redirect-link/r/${codigo}`);
+    }
+  }, [codigo]);
+
+  return (
+    <div className="flex h-screen w-screen items-center justify-center">
+      <div className="text-center space-y-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mx-auto"></div>
+        <p className="text-muted-foreground">Redirecionando...</p>
+      </div>
+    </div>
+  );
+}
 
 // Componente principal
 function App() {
@@ -57,66 +79,25 @@ function App() {
             }
           />
 
-          {/* Rotas protegidas */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Painel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/painel"
-            element={
-              <ProtectedRoute>
-                <Painel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/produtos"
-            element={
-              <ProtectedRoute>
-                <Produtos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/agente"
-            element={
-              <ProtectedRoute>
-                <Agente />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plataformas"
-            element={
-              <ProtectedRoute>
-                <Plataformas />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notificacoes"
-            element={
-              <ProtectedRoute>
-                <Notificacoes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/configuracoes"
-            element={
-              <ProtectedRoute>
-                <Configuracoes />
-              </ProtectedRoute>
-            }
-          />
-
           {/* Rota para link curto (redirecionamento) */}
-          <Route path="/r/:codigo" element={<div>Redirecionando...</div>} />
+          <Route path="/r/:codigo" element={<RedirectLink />} />
+
+          {/* Rotas protegidas com Layout */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<Painel />} />
+            <Route path="/painel" element={<Painel />} />
+            <Route path="/produtos" element={<Produtos />} />
+            <Route path="/agente" element={<Agente />} />
+            <Route path="/plataformas" element={<Plataformas />} />
+            <Route path="/notificacoes" element={<Notificacoes />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+          </Route>
 
           {/* Rota 404 */}
           <Route

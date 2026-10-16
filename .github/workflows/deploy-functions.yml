@@ -1,0 +1,41 @@
+name: Deploy Edge Functions
+
+on:
+  workflow_dispatch:
+    inputs:
+      function:
+        description: 'Função para deployar (redirect-link, ia-testar, ia-completar ou all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - redirect-link
+          - ia-testar
+          - ia-completar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+
+      - name: Deploy redirect-link
+        if: github.event.inputs.function == 'redirect-link' || github.event.inputs.function == 'all'
+        run: supabase functions deploy redirect-link --project-ref gkjibjipgcqasweisfitp
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy ia-testar
+        if: github.event.inputs.function == 'ia-testar' || github.event.inputs.function == 'all'
+        run: supabase functions deploy ia-testar --project-ref gkjibjipgcqasweisfitp
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy ia-completar
+        if: github.event.inputs.function == 'ia-completar' || github.event.inputs.function == 'all'
+        run: supabase functions deploy ia-completar --project-ref gkjibjipgcqasweisfitp
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
